@@ -20,7 +20,7 @@ import reactor.core.publisher.Flux;
 
 @EnableEurekaClient
 @SpringBootApplication
-@EntityScan(basePackageClasses = Producto.class)
+@EntityScan(basePackageClasses = Categoria.class)
 public class WebfluxApplication implements CommandLineRunner {
 
 	@Autowired
