@@ -1,4 +1,4 @@
-package com.jdasilva.webflux.app.controllers;
+package com.jdasilva.socialweb.webflux.productos.controllers;
 
 import java.io.File;
 import java.net.URI;
@@ -28,8 +28,8 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.support.WebExchangeBindException;
 
 import com.jdasilva.socialweb.commons.models.document.Producto;
-import com.jdasilva.webflux.app.services.IProductoService;
-import com.jdasilva.webflux.app.services.IUploadService;
+import com.jdasilva.socialweb.webflux.productos.services.IProductoService;
+import com.jdasilva.socialweb.webflux.productos.services.IUploadService;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;

@@ -1,4 +1,4 @@
-package com.jdasilva.webflux.app.dao;
+package com.jdasilva.socialweb.webflux.productos.dao;
 
 import org.springframework.data.mongodb.repository.MongoRepository;
 

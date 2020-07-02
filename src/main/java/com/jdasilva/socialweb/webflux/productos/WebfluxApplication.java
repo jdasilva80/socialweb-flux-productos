@@ -1,4 +1,4 @@
-package com.jdasilva.webflux.app;
+package com.jdasilva.socialweb.webflux.productos;
 
 import java.util.Date;
 
@@ -14,13 +14,13 @@ import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
 
 import com.jdasilva.socialweb.commons.models.document.Categoria;
 import com.jdasilva.socialweb.commons.models.document.Producto;
-import com.jdasilva.webflux.app.services.IProductoService;
+import com.jdasilva.socialweb.webflux.productos.services.IProductoService;
 
 import reactor.core.publisher.Flux;
 
 @EnableEurekaClient
 @SpringBootApplication
-@EntityScan(basePackageClasses = Categoria.class)
+@EntityScan(basePackageClasses = {Categoria.class})
 public class WebfluxApplication implements CommandLineRunner {
 
 	@Autowired

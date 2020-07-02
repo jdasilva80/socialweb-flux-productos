@@ -1,4 +1,4 @@
-package com.jdasilva.webflux.app.dao;
+package com.jdasilva.socialweb.webflux.productos.dao;
 
 import java.util.List;
 

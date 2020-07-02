@@ -1,4 +1,4 @@
-package com.jdasilva.webflux.app.services;
+package com.jdasilva.socialweb.webflux.productos.services;
 
 import java.util.List;
 
@@ -8,10 +8,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.jdasilva.socialweb.commons.models.document.Categoria;
 import com.jdasilva.socialweb.commons.models.document.Producto;
-import com.jdasilva.webflux.app.dao.CategoriaDao;
-import com.jdasilva.webflux.app.dao.CategoriaReactiveDao;
-import com.jdasilva.webflux.app.dao.ProductosDao;
-import com.jdasilva.webflux.app.dao.ProductosReactiveDao;
+import com.jdasilva.socialweb.webflux.productos.dao.CategoriaDao;
+import com.jdasilva.socialweb.webflux.productos.dao.CategoriaReactiveDao;
+import com.jdasilva.socialweb.webflux.productos.dao.ProductosDao;
+import com.jdasilva.socialweb.webflux.productos.dao.ProductosReactiveDao;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;

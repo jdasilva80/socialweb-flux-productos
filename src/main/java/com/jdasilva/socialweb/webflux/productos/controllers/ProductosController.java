@@ -1,4 +1,4 @@
-package com.jdasilva.webflux.app.controllers;
+package com.jdasilva.socialweb.webflux.productos.controllers;
 
 import java.io.File;
 import java.net.MalformedURLException;
@@ -33,7 +33,7 @@ import org.thymeleaf.spring5.context.webflux.ReactiveDataDriverContextVariable;
 
 import com.jdasilva.socialweb.commons.models.document.Categoria;
 import com.jdasilva.socialweb.commons.models.document.Producto;
-import com.jdasilva.webflux.app.services.IProductoService;
+import com.jdasilva.socialweb.webflux.productos.services.IProductoService;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
