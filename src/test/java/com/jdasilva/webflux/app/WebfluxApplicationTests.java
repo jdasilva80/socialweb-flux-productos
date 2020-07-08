@@ -1,12 +1,12 @@
 package com.jdasilva.webflux.app;
 
-import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
+//import org.junit.jupiter.api.Test;
+//import org.springframework.boot.test.context.SpringBootTest;
 
-@SpringBootTest
+//@SpringBootTest
 class WebfluxApplicationTests {
 
-	@Test
+	//@Test
 	void contextLoads() {
 	}
 
