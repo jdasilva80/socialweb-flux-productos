@@ -1,1 +1,0 @@
-web java -jar target/socialweb-productos-0.0.1-SNAPSHOT.jar --spring.data.mongodb.uri=$MONGODB_URI --server.port=$PORT
