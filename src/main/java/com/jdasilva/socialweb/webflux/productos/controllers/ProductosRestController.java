@@ -181,7 +181,6 @@ public class ProductosRestController {
 //					p.setFoto(file.filename());
 //					return file.transferTo(new File("c://temp//" + UUID.randomUUID() + "_" + file.filename()))
 //							.then(productoService.saveReactive(p));
-					p.setFoto(file.getOriginalFilename());
 					try {
 						p.setFoto(uploadService.copy(file));
 					} catch (IOException e) {
