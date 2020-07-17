@@ -5,9 +5,9 @@
 <title th:text="${titulo}"></title>
 </head>
 <body>
-	<a th:href="@{/productos/listar}">volver</a>
+	<a th:href="@{/api/socialweb-productos/productos/listar}">volver</a>
 	<br>
-	<form th:action="@{/productos/form}" th:object="${producto}" method="post" enctype="multipart/form-data">
+	<form th:action="@{/api/socialweb-productos/productos/form}" th:object="${producto}" method="post" enctype="multipart/form-data">
 
 		<input type="hidden" th:field="*{id}" th:if="${producto.id != null}"></input>
 		<!-- es necesario para flujos reactivos -->

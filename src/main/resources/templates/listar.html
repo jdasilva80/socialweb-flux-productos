@@ -9,7 +9,7 @@
 	<div th:text="${param.error}" th:if="${param.error} != null"></div>
 	<div th:text="${param.success}" th:if="${param.success} != null"></div>
 
-	<a th:href="@{/productos/form}">crear +</a>
+	<a th:href="@{/api/socialweb-productos/productos/form}">crear +</a>
 	<table>
 		<thead>
 			<tr>
@@ -25,15 +25,15 @@
 		</thead>
 		<tbody>
 			<tr th:each="producto : ${productos}">
-				<td><a th:href="@{/productos/ver/}+${producto.id}" th:text="${#strings.abbreviate(producto.id,10)}"></a></td>
+				<td><a th:href="@{/api/socialweb-productos/productos/ver/}+${producto.id}" th:text="${#strings.abbreviate(producto.id,10)}"></a></td>
 				<td th:text="${producto.nombre}"></td>
 				<td th:text="${#numbers.formatCurrency(producto.precio)}"></td>
 				<td th:text="${#calendars.format(producto.createAt,'dd/MM/yyyy')}"></td>
 				<td th:text="${producto.categoria.nombre}"></td>
-				<td><a th:href=@{/productos/form/}+${producto.id}>editar</a></td>
-				<td><a th:href=@{/productos/reactiveform/}+${producto.id}>editar
+				<td><a th:href=@{/api/socialweb-productos/productos/form/}+${producto.id}>editar</a></td>
+				<td><a th:href=@{/api/socialweb-productos/productos/reactiveform/}+${producto.id}>editar
 						react</a></td>
-				<td><a th:href=@{/productos/eliminar/}+${producto.id}
+				<td><a th:href=@{/api/socialweb-productos/productos/eliminar/}+${producto.id}
 					onclick="return confirm('¿estas seguro?')">eliminar</a></td>
 			</tr>
 
