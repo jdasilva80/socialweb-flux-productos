@@ -11,7 +11,7 @@
 			th:alt="${producto.nombre}" style="max-width: 25%"></img>
 	</div>
 	<div>
-		<a th:href="@{/listar}">volver</a>
+		<a th:href="@{/productos/listar}">volver</a>
 	</div>
 	<ul>
 		<li th:text="${#strings.abbreviate(producto.id,10)}"></li>
