@@ -1,12 +1,10 @@
 package com.jdasilva.socialweb.webflux.productos.controllers;
 
-import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.Date;
-import java.util.UUID;
+//import java.util.UUID;
 
 import javax.validation.Valid;
 
@@ -14,10 +12,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
-import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -29,11 +25,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.SessionAttributes;
 import org.springframework.web.bind.support.SessionStatus;
+import org.springframework.web.multipart.MultipartFile;
 import org.thymeleaf.spring5.context.webflux.ReactiveDataDriverContextVariable;
 
 import com.jdasilva.socialweb.commons.models.document.Categoria;
 import com.jdasilva.socialweb.commons.models.document.Producto;
 import com.jdasilva.socialweb.webflux.productos.services.IProductoService;
+import com.jdasilva.socialweb.webflux.productos.services.IUploadService;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -45,6 +43,9 @@ public class ProductosController {
 
 	@Autowired
 	private IProductoService productoService;
+
+	@Autowired
+	private IUploadService uploadService;
 
 	private static final Logger log = LoggerFactory.getLogger(ProductosController.class);
 
@@ -65,8 +66,8 @@ public class ProductosController {
 	}
 
 	@PostMapping("/form")
-	public Mono<String> guardar(@Valid Producto producto, BindingResult result, Model model, @RequestPart FilePart file,
-			SessionStatus status) {
+	public Mono<String> guardar(@Valid Producto producto, BindingResult result, Model model,
+			@RequestPart MultipartFile file, SessionStatus status) {
 
 		if (result.hasErrors()) {
 
@@ -85,14 +86,23 @@ public class ProductosController {
 				}
 				producto.setCategoria(c);
 
-				if (!file.filename().isEmpty()) {
-
-					producto.setFoto(UUID.randomUUID().toString().concat("-").concat(file.filename().replace(" ", "")));
-				}
+//				if (!file.getOriginalFilename().isEmpty()) {
+//
+//					producto.setFoto(UUID.randomUUID().toString().concat("-")
+//							.concat(file.getOriginalFilename().replace(" ", "")));
+//				}
 				return productoService.saveReactive(producto);
-			}).doOnNext(p -> log.info("se ha guardado el producto " + p.getId())).flatMap(p -> {
+			})
+			.doOnNext(p -> log.info("se ha guardado el producto " + p.getId()))
+			.flatMap(p -> {
 				if (!p.getFoto().isEmpty()) {
-					return file.transferTo(new File("c://temp//" + p.getFoto()));
+
+					try {
+						producto.setFoto(uploadService.copy(file));
+					} catch (IOException e) {
+						log.info("No se ha podido copiar el archivo ,".concat(file.getOriginalFilename()));
+					}
+					// return file.transferTo(new File("c://temp//" + p.getFoto()));
 				}
 				return Mono.empty();
 			}).thenReturn("redirect:/listar?success=guardado+correctamente");
@@ -134,14 +144,24 @@ public class ProductosController {
 	@GetMapping("/verfoto/{foto}")
 	public Mono<ResponseEntity<Resource>> verFoto(@PathVariable String foto) throws MalformedURLException {
 
-		Path ruta = Paths.get("c://temp/").resolve(foto).toAbsolutePath();
+		// Path ruta = Paths.get("c://temp/").resolve(foto).toAbsolutePath();
+//		Resource imagen = new UrlResource(ruta.toUri());//
+//		return Mono.just(ResponseEntity.ok()
+//				.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename:\"" + imagen.getFilename() + "\"")
+//				.body(imagen));
 
-		Resource imagen = new UrlResource(ruta.toUri());
+		Resource recurso = null;
 
-		return Mono.just(ResponseEntity.ok()
-				.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename:\"" + imagen.getFilename() + "\"")
-				.body(imagen));
+		recurso = uploadService.load(foto);
 
+		if (recurso != null) {
+
+			return Mono.just(ResponseEntity.ok()
+					.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename:\"" + recurso.getFilename() + "\"")
+					.body(recurso));
+		} else {
+			return Mono.just(ResponseEntity.noContent().build());
+		}
 	}
 
 	@GetMapping("/ver/{id}")

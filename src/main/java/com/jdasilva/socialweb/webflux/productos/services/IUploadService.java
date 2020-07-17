@@ -9,7 +9,7 @@ public interface IUploadService {
 
 	public Resource load(String filename);
 
-	public String copy(MultipartFile multipartFile) throws IOException;
+	public String copy(MultipartFile file) throws IOException;
 
 	public boolean delete(String fileName) throws IOException;
 

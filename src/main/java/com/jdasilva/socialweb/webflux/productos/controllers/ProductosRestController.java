@@ -1,6 +1,7 @@
 package com.jdasilva.socialweb.webflux.productos.controllers;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.List;
@@ -9,6 +10,8 @@ import java.util.UUID;
 
 import javax.validation.Valid;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
@@ -26,6 +29,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.support.WebExchangeBindException;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.jdasilva.socialweb.commons.models.document.Producto;
 import com.jdasilva.socialweb.webflux.productos.services.IProductoService;
@@ -38,6 +42,8 @@ import reactor.core.publisher.Mono;
 @RequestMapping("/apirest/productos")
 public class ProductosRestController {
 
+	private static final Logger log = LoggerFactory.getLogger(ProductosRestController.class);
+	
 	@Autowired
 	IProductoService productoService;
 
@@ -167,14 +173,21 @@ public class ProductosRestController {
 	}
 
 	@PostMapping("/uploads/{id}")
-	public Mono<ResponseEntity<Producto>> upload(@PathVariable String id, @RequestPart FilePart file) {
+	public Mono<ResponseEntity<Producto>> upload(@PathVariable String id, @RequestPart MultipartFile file) {
 
 		return productoService.findByIdReactive(id).flatMap(
 
 				p -> {
-					p.setFoto(file.filename());
-					return file.transferTo(new File("c://temp//" + UUID.randomUUID() + "_" + file.filename()))
-							.then(productoService.saveReactive(p));
+//					p.setFoto(file.filename());
+//					return file.transferTo(new File("c://temp//" + UUID.randomUUID() + "_" + file.filename()))
+//							.then(productoService.saveReactive(p));
+					p.setFoto(file.getOriginalFilename());
+					try {
+						p.setFoto(uploadService.copy(file));
+					} catch (IOException e) {
+						log.info("No se ha podido copiar el archivo ,".concat(file.getOriginalFilename()));
+					}
+					return productoService.saveReactive(p);	
 				}
 
 		).map(p -> ResponseEntity.ok(p)).defaultIfEmpty(ResponseEntity.notFound().build());

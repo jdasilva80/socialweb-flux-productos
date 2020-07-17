@@ -15,6 +15,7 @@ import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
 import com.jdasilva.socialweb.commons.models.document.Categoria;
 import com.jdasilva.socialweb.commons.models.document.Producto;
 import com.jdasilva.socialweb.webflux.productos.services.IProductoService;
+import com.jdasilva.socialweb.webflux.productos.services.IUploadService;
 
 import reactor.core.publisher.Flux;
 
@@ -28,6 +29,9 @@ public class WebfluxApplication implements CommandLineRunner {
 
 	@Autowired
 	private ReactiveMongoTemplate reactiveMongoTemplate;
+	
+	@Autowired
+	IUploadService uploadService;
 
 	private final Logger log = LoggerFactory.getLogger(WebfluxApplication.class);
 
@@ -37,6 +41,9 @@ public class WebfluxApplication implements CommandLineRunner {
 
 	@Override
 	public void run(String... args) throws Exception {
+		
+		uploadService.deleteAll();
+		uploadService.init();
 
 		reactiveMongoTemplate.dropCollection("productos").subscribe();
 		reactiveMongoTemplate.dropCollection("categorias").subscribe();

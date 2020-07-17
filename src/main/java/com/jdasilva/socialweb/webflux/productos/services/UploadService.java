@@ -30,9 +30,6 @@ public class UploadService implements IUploadService {
 
 		try {
 			recurso = new UrlResource(rootPath.toUri());
-			System.out.println("////////////////////////////  "+ rootPath.toUri());
-			System.out.println("%%%%%%%%%%%%%%%%%%%%%%%%%%%  "+ recurso.isReadable());
-			System.out.println("%%%%%%%%%%%%%%%%%%%%%%%%%%%  "+ recurso.exists());
 
 			if (!recurso.exists() && !recurso.isReadable()) {
 				throw new RuntimeException("no se puede cargar la foto : ".concat(filename));
