@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.support.WebExchangeBindException;
@@ -43,7 +44,7 @@ import reactor.core.publisher.Mono;
 public class ProductosRestController {
 
 	private static final Logger log = LoggerFactory.getLogger(ProductosRestController.class);
-	
+
 	@Autowired
 	IProductoService productoService;
 
@@ -71,17 +72,17 @@ public class ProductosRestController {
 		return productoService.findAll();
 
 	}
-	
+
 	@GetMapping("findById-no-flux/{productoId}")
 	public Producto findByIdNoFlux(@PathVariable String productoId) {
-		
+
 		return productoService.findById(productoId);
 
 	}
 
 	@GetMapping("/nombre/{term}")
 	public List<Producto> findProductosByNombreNoFLux(@PathVariable String term) {
-		
+
 		return productoService.findByNombre(term);
 
 	}
@@ -173,7 +174,8 @@ public class ProductosRestController {
 	}
 
 	@PostMapping("/uploads/{id}")
-	public Mono<ResponseEntity<Producto>> upload(@PathVariable String id, @RequestPart MultipartFile file) {
+	public Mono<ResponseEntity<Producto>> upload(@PathVariable String id,
+			@RequestParam(name = "file", required = false) MultipartFile file) {
 
 		return productoService.findByIdReactive(id).flatMap(
 
@@ -186,7 +188,7 @@ public class ProductosRestController {
 					} catch (IOException e) {
 						log.info("No se ha podido copiar el archivo ,".concat(file.getOriginalFilename()));
 					}
-					return productoService.saveReactive(p);	
+					return productoService.saveReactive(p);
 				}
 
 		).map(p -> ResponseEntity.ok(p)).defaultIfEmpty(ResponseEntity.notFound().build());

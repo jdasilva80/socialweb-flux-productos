@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.SessionAttributes;
 import org.springframework.web.bind.support.SessionStatus;
 import org.springframework.web.multipart.MultipartFile;
@@ -67,7 +67,7 @@ public class ProductosController {
 
 	@PostMapping("/form")
 	public Mono<String> guardar(@Valid Producto producto, BindingResult result, Model model,
-			@RequestPart MultipartFile file, SessionStatus status) {
+			@RequestParam(name = "file", required = false) MultipartFile file, SessionStatus status) {
 
 		if (result.hasErrors()) {
 
@@ -92,9 +92,7 @@ public class ProductosController {
 //							.concat(file.getOriginalFilename().replace(" ", "")));
 //				}
 				return productoService.saveReactive(producto);
-			})
-			.doOnNext(p -> log.info("se ha guardado el producto " + p.getId()))
-			.flatMap(p -> {
+			}).doOnNext(p -> log.info("se ha guardado el producto " + p.getId())).flatMap(p -> {
 				if (!p.getFoto().isEmpty()) {
 
 					try {
