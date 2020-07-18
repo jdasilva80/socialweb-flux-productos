@@ -93,15 +93,13 @@ public class ProductosController {
 //				}
 				return productoService.saveReactive(producto);
 			}).doOnNext(p -> log.info("se ha guardado el producto " + p.getId())).flatMap(p -> {
-				if (!p.getFoto().isEmpty()) {
-
+				
 					try {
-						producto.setFoto(uploadService.copy(file));
+						p.setFoto(uploadService.copy(file));
 					} catch (IOException e) {
 						log.info("No se ha podido copiar el archivo ,".concat(file.getOriginalFilename()));
 					}
 					// return file.transferTo(new File("c://temp//" + p.getFoto()));
-				}
 				return Mono.empty();
 			}).thenReturn("redirect:/listar?success=guardado+correctamente");
 		}
