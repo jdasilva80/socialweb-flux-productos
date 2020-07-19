@@ -2,9 +2,10 @@ package com.jdasilva.socialweb.webflux.productos.controllers;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+//import java.nio.file.Path;
+//import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.Date;
-//import java.util.UUID;
 
 import javax.validation.Valid;
 
@@ -12,8 +13,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
+//import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -22,10 +25,9 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.SessionAttributes;
 import org.springframework.web.bind.support.SessionStatus;
-import org.springframework.web.multipart.MultipartFile;
 import org.thymeleaf.spring5.context.webflux.ReactiveDataDriverContextVariable;
 
 import com.jdasilva.socialweb.commons.models.document.Categoria;
@@ -45,8 +47,8 @@ public class ProductosController {
 	private IProductoService productoService;
 
 	@Autowired
-	private IUploadService uploadService;
-
+	IUploadService uploadService;
+	
 	private static final Logger log = LoggerFactory.getLogger(ProductosController.class);
 
 	@ModelAttribute("categorias")
@@ -66,8 +68,8 @@ public class ProductosController {
 	}
 
 	@PostMapping("/form")
-	public Mono<String> guardar(@Valid Producto producto, BindingResult result, Model model,
-			@RequestParam(name = "file", required = false) MultipartFile file, SessionStatus status) {
+	public Mono<String> guardar(@Valid Producto producto, BindingResult result, Model model, @RequestPart FilePart file,
+			SessionStatus status) {
 
 		if (result.hasErrors()) {
 
@@ -86,22 +88,21 @@ public class ProductosController {
 				}
 				producto.setCategoria(c);
 
-//				if (!file.getOriginalFilename().isEmpty()) {
-//
-//					producto.setFoto(UUID.randomUUID().toString().concat("-")
-//							.concat(file.getOriginalFilename().replace(" ", "")));
-//				}
-				return productoService.saveReactive(producto);
-			}).doOnNext(p -> log.info("se ha guardado el producto " + p.getId())).flatMap(p -> {
-				
+				if (!file.filename().isEmpty()) {
+
+	//					producto.setFoto(UUID.randomUUID().toString().concat("-").concat(file.filename().replace(" ", "")));
+	//				}
 					try {
-						p.setFoto(uploadService.copy(file));
+						producto.setFoto(uploadService.copy(file));
 					} catch (IOException e) {
-						log.info("No se ha podido copiar el archivo ,".concat(file.getOriginalFilename()));
+						log.info("No se ha podido copiar el archivo ,".concat(file.filename()));
 					}
-					// return file.transferTo(new File("c://temp//" + p.getFoto()));
-				return Mono.empty();
-			}).thenReturn("redirect:/listar?success=guardado+correctamente");
+				}
+				return productoService.saveReactive(producto);
+				
+			})
+			.doOnNext(p -> log.info("se ha guardado el producto " + p.getId()))
+			.thenReturn("redirect:/api/socialweb-productos/productos/listar?success=guardado+correctamente");
 		}
 	}
 
@@ -133,31 +134,22 @@ public class ProductosController {
 			}
 			return Mono.just(p);
 		}).then(Mono.just("form"))
-				.onErrorResume((e) -> Mono.just("redirect:/listar?error=no+existe+el+id+de+producto"));
+				.onErrorResume((e) -> Mono.just("redirect:/api/socialweb-productos/productos/listar?error=no+existe+el+id+de+producto"));
 
 	}
 
 	@GetMapping("/verfoto/{foto}")
 	public Mono<ResponseEntity<Resource>> verFoto(@PathVariable String foto) throws MalformedURLException {
 
-		// Path ruta = Paths.get("c://temp/").resolve(foto).toAbsolutePath();
-//		Resource imagen = new UrlResource(ruta.toUri());//
-//		return Mono.just(ResponseEntity.ok()
-//				.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename:\"" + imagen.getFilename() + "\"")
-//				.body(imagen));
+//		Path ruta = Paths.get("c://temp/").resolve(foto).toAbsolutePath();
+//
+//		Resource imagen = new UrlResource(ruta.toUri());
+		Resource imagen = uploadService.load(foto);
 
-		Resource recurso = null;
+		return Mono.just(ResponseEntity.ok()
+				.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename:\"" + imagen.getFilename())
+				.body(imagen));
 
-		recurso = uploadService.load(foto);
-
-		if (recurso != null) {
-
-			return Mono.just(ResponseEntity.ok()
-					.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename:\"" + recurso.getFilename() + "\"")
-					.body(recurso));
-		} else {
-			return Mono.just(ResponseEntity.noContent().build());
-		}
 	}
 
 	@GetMapping("/ver/{id}")
@@ -175,7 +167,7 @@ public class ProductosController {
 					}
 					return Mono.just(p);
 				}).then(Mono.just("ver"))
-				.onErrorResume((e) -> Mono.just("redirect:/listar?error=no+existe+el+id+de+producto"));
+				.onErrorResume((e) -> Mono.just("redirect:/api/socialweb-productos/productos/listar?error=no+existe+el+id+de+producto"));
 	}
 
 	@GetMapping("/eliminar/{id}")
@@ -186,8 +178,8 @@ public class ProductosController {
 				return Mono.error(new InterruptedException("no existe el id de producto"));
 			}
 			return Mono.just(p);
-		}).flatMap(p -> productoService.deleteReactive(p)).thenReturn("redirect:/listar?success=producto+eliminado")
-				.onErrorResume((e) -> Mono.just("redirect:/listar?error=no+existe+el+id+de+producto"));
+		}).flatMap(p -> productoService.deleteReactive(p)).thenReturn("redirect:/api/socialweb-productos/productos/listar?success=producto+eliminado")
+				.onErrorResume((e) -> Mono.just("redirect:/api/socialweb-productos/productos/listar?error=no+existe+el+id+de+producto"));
 
 	}
 

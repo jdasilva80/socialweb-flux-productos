@@ -26,11 +26,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.support.WebExchangeBindException;
-import org.springframework.web.multipart.MultipartFile;
 
 import com.jdasilva.socialweb.commons.models.document.Producto;
 import com.jdasilva.socialweb.webflux.productos.services.IProductoService;
@@ -174,8 +172,7 @@ public class ProductosRestController {
 	}
 
 	@PostMapping("/uploads/{id}")
-	public Mono<ResponseEntity<Producto>> upload(@PathVariable String id,
-			@RequestParam(name = "file", required = false) MultipartFile file) {
+	public Mono<ResponseEntity<Producto>> upload(@PathVariable String id, @RequestPart FilePart file) {
 
 		return productoService.findByIdReactive(id).flatMap(
 
@@ -186,7 +183,7 @@ public class ProductosRestController {
 					try {
 						p.setFoto(uploadService.copy(file));
 					} catch (IOException e) {
-						log.info("No se ha podido copiar el archivo ,".concat(file.getOriginalFilename()));
+						log.info("No se ha podido copiar el archivo ,".concat(file.name()));
 					}
 					return productoService.saveReactive(p);
 				}
@@ -202,13 +199,14 @@ public class ProductosRestController {
 		recurso = uploadService.load(filename);
 
 		if (recurso != null) {
-
+			
 			return ResponseEntity.ok()
-					.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"".concat(filename)).body(recurso);
+					.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename:\"" .concat(recurso.getFilename()))
+					.body(recurso);
+
 		} else {
 
 			return ResponseEntity.noContent().build();
 		}
-
 	}
 }
