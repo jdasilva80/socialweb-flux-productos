@@ -200,7 +200,7 @@ public class ProductosRestController {
 
 		if (recurso != null) {
 			
-			return ResponseEntity.ok()
+			return ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG)
 					.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename:\"" .concat(recurso.getFilename()))
 					.body(recurso);
 
