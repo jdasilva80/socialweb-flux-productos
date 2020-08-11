@@ -48,11 +48,11 @@ public class WebfluxApplication implements CommandLineRunner {
 		reactiveMongoTemplate.dropCollection("productos").subscribe();
 		reactiveMongoTemplate.dropCollection("categorias").subscribe();
 
-//		Categoria cat1 = new Categoria("deportes");
-//		Categoria cat2 = new Categoria("electronica");
-//		Categoria cat3 = new Categoria("viajes");
-//
-//		Flux.just(cat1, cat2, cat3).flatMap(productoService::saveReactive).doOnNext(c -> log.info(c.getNombre()))
+		Categoria cat1 = new Categoria("deportes");
+		Categoria cat2 = new Categoria("electronica");
+		Categoria cat3 = new Categoria("viajes");
+
+		Flux.just(cat1, cat2, cat3).flatMap(productoService::saveReactive).doOnNext(c -> log.info(c.getNombre())).subscribe();
 //				.thenMany(Flux.just(new Producto("producto 1", 1.23, cat1, "producto1.jpg"), new Producto("producto 2", 1.23, cat2, "producto2.jpg"),
 //						new Producto("producto 3", 45.24, cat3, "producto3.jpg"), new Producto("producto 4", 19.43, cat1, "producto4.jpg"),
 //						new Producto("producto 5", 16.63, cat1, "producto5.jpg"), new Producto("producto 6", 18.83, cat2, "producto6.jpg"),
