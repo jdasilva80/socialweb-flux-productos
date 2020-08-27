@@ -48,6 +48,12 @@ public class ProductosRestController {
 
 	@Autowired
 	IUploadService uploadService;
+	
+	@GetMapping(value = { "/prueba" })
+	public Integer cargarProductosXml() {
+
+		return 1;
+	}
 
 	@GetMapping()
 	public Mono<ResponseEntity<Flux<Producto>>> listar() {
