@@ -1,23 +1,27 @@
 package com.jdasilva.socialweb.webflux.productos.services;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.jdasilva.socialweb.commons.models.document.Categoria;
-import com.jdasilva.socialweb.commons.models.document.Producto;
-import com.jdasilva.socialweb.webflux.productos.dao.CategoriaDao;
+import com.jdasilva.socialweb.commons.models.productos.entity.Categoria;
+import com.jdasilva.socialweb.commons.models.productos.entity.Producto;
 import com.jdasilva.socialweb.webflux.productos.dao.CategoriaReactiveDao;
-import com.jdasilva.socialweb.webflux.productos.dao.ProductosDao;
 import com.jdasilva.socialweb.webflux.productos.dao.ProductosReactiveDao;
+import com.jdasilva.socialweb.webflux.productos.dao.relational.CategoriaDao;
+import com.jdasilva.socialweb.webflux.productos.dao.relational.ProductosDao;
 
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 
 @Service
 public class ProductoServiceImpl implements IProductoService {
+	
+	private static final Logger log = LoggerFactory.getLogger(ProductoServiceImpl.class);
 
 	@Autowired
 	ProductosReactiveDao productosReactiveDao;
@@ -26,84 +30,18 @@ public class ProductoServiceImpl implements IProductoService {
 	CategoriaReactiveDao categoriaReactiveDao;
 
 	@Autowired
+	@Qualifier("productosDao")
 	ProductosDao productosDao;
 
 	@Autowired
+	@Qualifier("categoriaDao")
 	CategoriaDao categoriaDao;
-
-	@Transactional(readOnly = true)
-	@Override
-	public Flux<Producto> findAllReactive() {
-
-		return productosReactiveDao.findAll();
-	}
-
-	@Transactional(readOnly = true)
-	@Override
-	public Flux<Producto> findAllUpperCaseReactive() {
-
-		return productosReactiveDao.findAll().map(p -> {
-			p.setNombre(p.getNombre().toUpperCase());
-			return p;
-		});
-	}
-
-	@Transactional(readOnly = true)
-	@Override
-	public Flux<Producto> findAllUpperCaseRepeatReactive() {
-
-		return productosReactiveDao.findAll().map(p -> {
-			p.setNombre(p.getNombre().toUpperCase());
-			return p;
-		}).repeat(5000);
-	}
-
-	@Transactional(readOnly = true)
-	@Override
-	public Mono<Producto> findByIdReactive(String id) {
-
-		return productosReactiveDao.findById(id);
-	}
+	
 
 	@Override
-	public Producto findById(String id) {
+	public Producto findById(Long id) {
 
 		return productosDao.findById(id).orElse(null);
-	}
-
-	@Transactional
-	@Override
-	public Mono<Producto> saveReactive(Producto producto) {
-
-		return productosReactiveDao.save(producto);
-	}
-
-	@Transactional
-	@Override
-	public Mono<Void> deleteReactive(Producto producto) {
-
-		return productosReactiveDao.delete(producto);
-	}
-
-	@Transactional(readOnly = true)
-	@Override
-	public Flux<Categoria> findAllCategoriaReactive() {
-
-		return categoriaReactiveDao.findAll();
-	}
-
-	@Transactional(readOnly = true)
-	@Override
-	public Mono<Categoria> findCategoriaByIdReactive(String id) {
-
-		return categoriaReactiveDao.findById(id);
-	}
-
-	@Transactional
-	@Override
-	public Mono<Categoria> saveReactive(Categoria categoria) {
-
-		return categoriaReactiveDao.save(categoria);
 	}
 
 	@Transactional(readOnly = true)
@@ -116,8 +54,62 @@ public class ProductoServiceImpl implements IProductoService {
 	@Transactional(readOnly = true)
 	@Override
 	public List<Producto> findByNombre(String nombre) {
-		
+
+		log.info("$$$$$$$$$$$$$$$$$$  nombre " + nombre);
+
 		return productosDao.findByNombreLikeIgnoreCase(nombre);
+	}
+
+	@Transactional(readOnly = true)
+	@Override
+	public List<Producto> findAllUpperCase() {
+
+		return productosDao.findAll().stream().map(p -> {
+			p.setNombre(p.getNombre().toUpperCase());
+			return p;
+		}).collect(Collectors.toList());
+	}
+
+	@Transactional
+	@Override
+	public Producto save(Producto producto) {
+
+		return productosDao.save(producto);
+	}
+
+	@Transactional
+	@Override
+	public void delete(Producto producto) {
+
+		productosDao.delete(producto);
+	}
+
+	@Transactional(readOnly = true)
+	@Override
+	public List<Categoria> findAllCategoria() {
+
+		return categoriaDao.findAll();
+	}
+
+	@Transactional(readOnly = true)
+	@Override
+	public Categoria findCategoriaById(Long id) {
+
+		return categoriaDao.findById(id).orElse(null);
+	}
+
+	@Transactional
+	@Override
+	public Categoria save(Categoria categoria) {
+
+		return categoriaDao.save(categoria);
+	}
+
+	@Transactional(readOnly = true)
+	@Override
+	public List<Producto> findAllCaseRepeat() {
+
+		return productosDao.findAll();
 	}
 
 }

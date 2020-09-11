@@ -4,7 +4,6 @@ import org.springframework.data.mongodb.repository.ReactiveMongoRepository;
 
 import com.jdasilva.socialweb.commons.models.document.Categoria;
 
-
-public interface CategoriaReactiveDao extends ReactiveMongoRepository<Categoria, String> {
+public interface CategoriaReactiveDao extends ReactiveMongoRepository<Categoria,String> {
 
 }

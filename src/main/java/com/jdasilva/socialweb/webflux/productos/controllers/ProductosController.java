@@ -3,9 +3,8 @@ package com.jdasilva.socialweb.webflux.productos.controllers;
 import java.io.IOException;
 import java.net.MalformedURLException;
 //import java.nio.file.Path;
-//import java.nio.file.Paths;
-import java.time.Duration;
 import java.util.Date;
+import java.util.List;
 
 import javax.validation.Valid;
 
@@ -30,13 +29,10 @@ import org.springframework.web.bind.annotation.SessionAttributes;
 import org.springframework.web.bind.support.SessionStatus;
 import org.thymeleaf.spring5.context.webflux.ReactiveDataDriverContextVariable;
 
-import com.jdasilva.socialweb.commons.models.document.Categoria;
-import com.jdasilva.socialweb.commons.models.document.Producto;
+import com.jdasilva.socialweb.commons.models.productos.entity.Categoria;
+import com.jdasilva.socialweb.commons.models.productos.entity.Producto;
 import com.jdasilva.socialweb.webflux.productos.services.IProductoService;
 import com.jdasilva.socialweb.webflux.productos.services.IUploadService;
-
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 
 @Controller
 @SessionAttributes(names = { "producto" })
@@ -52,143 +48,121 @@ public class ProductosController {
 	private static final Logger log = LoggerFactory.getLogger(ProductosController.class);
 
 	@ModelAttribute("categorias")
-	public Flux<Categoria> categorias() {
+	public List<Categoria> categorias() {
 
-		return productoService.findAllCategoriaReactive();
+		return productoService.findAllCategoria();
 	}
 
 	@GetMapping("/form")
-	public Mono<String> crear(Model model) {
+	public String crear(Model model) {
 
 		model.addAttribute("titulo", "alta producto");
 		model.addAttribute("producto", new Producto());
 		model.addAttribute("boton", "crear");
 
-		return Mono.just("form");
+		return "form";
 	}
 
 	@PostMapping("/form")
-	public Mono<String> guardar(@Valid Producto producto, BindingResult result, Model model, @RequestPart FilePart file,
+	public String guardar(@Valid Producto producto, BindingResult result, Model model, @RequestPart FilePart file,
 			SessionStatus status) {
 
 		if (result.hasErrors()) {
 
 			model.addAttribute("titulo", "Error al guardar el producto.");
 			model.addAttribute("boton", "guardar");
-			return Mono.just("/form");
+			return "/form";
 
 		} else {
 
 			status.setComplete();
 
-			return productoService.findCategoriaByIdReactive(producto.getCategoria().getId()).flatMap(c -> {
-				if (producto.getCreateAt() == null) {
+			Categoria categoria  = productoService.findCategoriaById(producto.getCategoria().getId());
+			
+			if (producto.getCreateAt() == null) {
 
-					producto.setCreateAt(new Date());
-				}
-				producto.setCategoria(c);
+				producto.setCreateAt(new Date());
+			}
+			producto.setCategoria(categoria);
 
-				if (!file.filename().isEmpty()) {
+			if (!file.filename().isEmpty()) {
 
-	//					producto.setFoto(UUID.randomUUID().toString().concat("-").concat(file.filename().replace(" ", "")));
+	//			producto.setFoto(UUID.randomUUID().toString().concat("-").concat(file.filename().replace(" ", "")));
 	//				}
-					try {
-						producto.setFoto(uploadService.copy(file));
-					} catch (IOException e) {
+				try {
+					producto.setFoto(uploadService.copy(file));
+				} catch (IOException e) {
 						log.info("No se ha podido copiar el archivo ,".concat(file.filename()));
-					}
 				}
-				return productoService.saveReactive(producto);
-				
-			})
-			.doOnNext(p -> log.info("se ha guardado el producto " + p.getId()))
-			.thenReturn("redirect:/api/socialweb-productos/productos/listar?success=guardado+correctamente");
+			}
+			productoService.save(producto);				
+			
+			log.info("se ha guardado el producto " + producto.getId());
+			
+			return "redirect:/api/socialweb-productos/productos/listar?success=guardado+correctamente";
 		}
 	}
 
 	@GetMapping("/form/{id}")
-	public Mono<String> editar(@PathVariable String id, Model model) {
+	public String editar(@PathVariable Long id, Model model) {
 
-		Mono<Producto> producto = productoService.findByIdReactive(id)
-				.doOnNext(p -> log.info("producto ".concat(p.getNombre()))).defaultIfEmpty(new Producto());
+		Producto producto = productoService.findById(id);
+		log.info("producto ".concat(producto.getNombre()));
 		model.addAttribute("producto", producto);
 		model.addAttribute("titulo", "Producto");
 		model.addAttribute("boton", "editar");
 
-		return Mono.just("form");
-	}
-
-	@GetMapping("/reactiveform/{id}")
-	public Mono<String> editarReact(@PathVariable String id, Model model) {
-
-		return productoService.findByIdReactive(id).doOnNext(p -> {
-
-			log.info("producto ".concat(p.getNombre()));
-			model.addAttribute("producto", p);
-			model.addAttribute("titulo", "Producto");
-			model.addAttribute("boton", "editar");
-
-		}).defaultIfEmpty(new Producto()).flatMap((p) -> {
-			if (p.getId() == null) {
-				return Mono.error(new InterruptedException("no existe el id de producto"));
-			}
-			return Mono.just(p);
-		}).then(Mono.just("form"))
-				.onErrorResume((e) -> Mono.just("redirect:/api/socialweb-productos/productos/listar?error=no+existe+el+id+de+producto"));
-
+		return "form";
 	}
 
 	@GetMapping("/verfoto/{foto}")
-	public Mono<ResponseEntity<Resource>> verFoto(@PathVariable String foto) throws MalformedURLException {
+	public ResponseEntity<Resource> verFoto(@PathVariable String foto) throws MalformedURLException {
 
 //		Path ruta = Paths.get("c://temp/").resolve(foto).toAbsolutePath();
 //
 //		Resource imagen = new UrlResource(ruta.toUri());
 		Resource imagen = uploadService.load(foto);
 
-		return Mono.just(ResponseEntity.ok()
+		return ResponseEntity.ok()
 				.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename:\"" + imagen.getFilename())
-				.body(imagen));
+				.body(imagen);
 
 	}
 
 	@GetMapping("/ver/{id}")
-	public Mono<String> ver(@PathVariable String id, Model model) {
+	public String ver(@PathVariable Long id, Model model) {
 
-		return productoService.findByIdReactive(id).doOnNext(
+		Producto producto = productoService.findById(id);
+		
+		if(producto != null) {
+		
+			model.addAttribute("titulo", "detalle producto");
+			model.addAttribute("producto", producto);
+			return "ver";
 
-				p -> {
-					model.addAttribute("titulo", "detalle producto");
-					model.addAttribute("producto", p);
-
-				}).defaultIfEmpty(new Producto()).flatMap((p) -> {
-					if (p.getId() == null) {
-						return Mono.error(new InterruptedException("no existe el id de producto"));
-					}
-					return Mono.just(p);
-				}).then(Mono.just("ver"))
-				.onErrorResume((e) -> Mono.just("redirect:/api/socialweb-productos/productos/listar?error=no+existe+el+id+de+producto"));
+		}
+		return "redirect:/api/socialweb-productos/productos/listar?error=no+existe+el+id+de+producto";
 	}
 
 	@GetMapping("/eliminar/{id}")
-	public Mono<String> delete(@PathVariable String id) {
+	public String delete(@PathVariable Long id) {
+		
+		Producto producto = productoService.findById(id);
 
-		return productoService.findByIdReactive(id).defaultIfEmpty(new Producto()).flatMap((p) -> {
-			if (p.getId() == null) {
-				return Mono.error(new InterruptedException("no existe el id de producto"));
-			}
-			return Mono.just(p);
-		}).flatMap(p -> productoService.deleteReactive(p)).thenReturn("redirect:/api/socialweb-productos/productos/listar?success=producto+eliminado")
-				.onErrorResume((e) -> Mono.just("redirect:/api/socialweb-productos/productos/listar?error=no+existe+el+id+de+producto"));
-
+		if(producto != null) {
+			productoService.delete(producto);
+			return "redirect:/api/socialweb-productos/productos/listar?success=producto+eliminado";
+			
+		}			
+		return "redirect:/api/socialweb-productos/productos/listar?error=no+existe+el+id+de+producto";
+		
 	}
 
 	@RequestMapping({ "/listar-data-driven" })
 	public String listarDataDriven(Model model) {
 
 		model.addAttribute("titulo", "productos");
-		Flux<Producto> productos = productoService.findAllUpperCaseReactive().delayElements(Duration.ofSeconds(2));
-		productos.subscribe(producto -> log.info(producto.getNombre()));
+		List<Producto> productos = productoService.findAllCaseRepeat();
 		model.addAttribute("productos", new ReactiveDataDriverContextVariable(productos, 2));
 
 		return "listar";
@@ -198,8 +172,7 @@ public class ProductosController {
 	public String listar(Model model) {
 
 		model.addAttribute("titulo", "productos");
-		Flux<Producto> productos = productoService.findAllReactive();
-		productos.subscribe(producto -> log.info(producto.getNombre()));
+		List<Producto> productos = productoService.findAll();
 		model.addAttribute("productos", productos);
 
 		return "listar";
@@ -209,8 +182,7 @@ public class ProductosController {
 	public String listarFull(Model model) {
 
 		model.addAttribute("titulo", "productos");
-		Flux<Producto> productos = productoService.findAllUpperCaseRepeatReactive();
-		productos.subscribe(producto -> log.info(producto.getNombre()));
+		List<Producto> productos = productoService.findAllCaseRepeat();
 		model.addAttribute("productos", productos);
 
 		return "listar";
@@ -220,8 +192,7 @@ public class ProductosController {
 	public String listarChunked(Model model) {
 
 		model.addAttribute("titulo", "productos");
-		Flux<Producto> productos = productoService.findAllUpperCaseRepeatReactive();
-		productos.subscribe(producto -> log.info(producto.getNombre()));
+		List<Producto> productos = productoService.findAllCaseRepeat();
 		model.addAttribute("productos", productos);
 
 		return "listar-chunked";
