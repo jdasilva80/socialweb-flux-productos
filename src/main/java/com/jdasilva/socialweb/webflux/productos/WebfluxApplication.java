@@ -31,7 +31,7 @@ public class WebfluxApplication implements CommandLineRunner {
 	@Autowired
 	private IProductoService productoService;
 
-	@Autowired
+	@Autowired(required = false)
 	private ReactiveMongoTemplate reactiveMongoTemplate;
 	
 	@Autowired
@@ -49,8 +49,8 @@ public class WebfluxApplication implements CommandLineRunner {
 		uploadService.deleteAll();
 		uploadService.init();
 
-		reactiveMongoTemplate.dropCollection("productos").subscribe();
-		reactiveMongoTemplate.dropCollection("categorias").subscribe();
+//		reactiveMongoTemplate.dropCollection("productos").subscribe();
+//		reactiveMongoTemplate.dropCollection("categorias").subscribe();
 
 		Categoria cat1 = new Categoria("deportes");
 		Categoria cat2 = new Categoria("electronica");
