@@ -20,10 +20,10 @@ import reactor.core.publisher.Mono;
 @Service
 public class ProductoReactiveServiceImpl implements IProductoReactiveService {
 
-	@Autowired
+	@Autowired(required = false )
 	ProductosReactiveDao productosReactiveDao;
 
-	@Autowired
+	@Autowired(required = false )
 	CategoriaReactiveDao categoriaReactiveDao;
 
 	@Autowired

@@ -23,10 +23,10 @@ public class ProductoServiceImpl implements IProductoService {
 	
 	private static final Logger log = LoggerFactory.getLogger(ProductoServiceImpl.class);
 
-	@Autowired
+	@Autowired(required = false )
 	ProductosReactiveDao productosReactiveDao;
 
-	@Autowired
+	@Autowired(required = false )
 	CategoriaReactiveDao categoriaReactiveDao;
 
 	@Autowired
